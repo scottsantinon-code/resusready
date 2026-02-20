@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#1B2A4A">
+    <title>ResusReady</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PWA Manifest (inline data URI) -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUmVzdXNSZWFkeSIsInNob3J0X25hbWUiOiJSZXN1c1JlYWR5IiwiZGVzY3JpcHRpb24iOiJDb2RlIEJsdWUgdGVhbSBodWRkbGUgZmFjaWxpdGF0b3IiLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwidGhlbWVfY29sb3IiOiIjMUIyQTRBIiwiYmFja2dyb3VuZF9jb2xvciI6IiNGRkZGRkYiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxOTIgMTkyJyUzRSUzQ3JlY3Qgd2lkdGg9JzE5Micgcm93Yj0nMTkyJyBmaWxsPSclMjMxQjJBNEEnLyUzRSUzQy9zdmclM0UiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+
+    <style>
+        :root {
+            --navy: #1B2A4A;
+            --accent: #4A90D9;
+            --light-blue: #7EC8E3;
+            --alert: #E63946;
+            --white: #FFFFFF;
+            --light-grey: #F0F2F5;
+            --success: #2ECC71;
+            --amber: #F39C12;
+            --text-primary: #1B2A4A;
+            --text-secondary: #5A6A7A;
+            --border: #E0E4E8;
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--light-grey);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        /* App Container */
+        .app {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: var(--white);
+            position: relative;
+        }
+
+        /* Timer Bar */
+        .timer-bar {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: var(--navy);
+            color: var(--white);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            display: none;
+        }
+
+        .timer-bar.active {
+            display: flex;
+        }
+
+        .timer-bar.overtime {
+            background: var(--alert);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        .timer-display {
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .progress-indicator {
+            display: flex;
+            gap: 6px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .progress-dot.active {
+            background: var(--white);
+        }
+
+        .progress-dot.complete {
+            background: var(--success);
+        }
+
+        /* Screen Container */
+        .screen {
+            display: none;
+            padding: 24px 20px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding-bottom: 120px;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .screen.has-timer {
+            padding-top: 72px;
+        }
+
+        /* Welcome Screen */
+        .logo-container {
+            text-align: center;
+            margin: 40px 0 32px;
+        }
+
+        .logo-container svg {
+            width: 200px;
+            height: auto;
+        }
+
+        .date-display {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .shift-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .shift-btn {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--white);
+            font-family: var(--font);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .shift-btn.selected {
+            border-color: var(--accent);
+            background: rgba(74, 144, 217, 0.1);
+            color: var(--accent);
+        }
+
+        .shift-btn span {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 18px 24px;
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary.success {
+            background: var(--success);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 16px 24px;
+            background: var(--light-grey);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .admin-link {
+            text-align: center;
+            margin-top: 48px;
+        }
+
+        .admin-link a {
+            color: #999;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        /* Section Header */
+        .section-header {
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Attendance Cards */
+        .role-card {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: var(--white);
+        }
+
+        .role-card:active {
+            transform: scale(0.98);
+        }
+
+        .role-card.present {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .role-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--light-grey);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            flex-shrink: 0;
+            font-size: 1.25rem;
+        }
+
+        .role-card.present .role-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .role-title {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        .role-check {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .role-card.present .role-check {
+            background: var(--white);
+            border-color: var(--white);
+            color: var(--accent);
+        }
+
+        /* Additional Attendees */
+        .additional-attendees {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--light-grey);
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .additional-label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stepper-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--white);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stepper-btn:active {
+            background: var(--light-grey);
+        }
+
+        .stepper-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        /* Agenda Items */
+        .agenda-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: var(--white);
+        }
+
+        .agenda-item:active {
+            transform: scale(0.98);
+        }
+
+        .agenda-item.discussed {
+            border-color: var(--success);
+            background: rgba(46, 204, 113, 0.08);
+        }
+
+        .agenda-check {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-right: 14px;
+            margin-top: 2px;
+        }
+
+        .agenda-item.discussed .agenda-check {
+            background: var(--success);
+            border-color: var(--success);
+            color: var(--white);
+        }
+
+        .agenda-content {
+            flex: 1;
+        }
+
+        .agenda-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agenda-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .agenda-item.discussed .agenda-subtitle {
+            opacity: 0.7;
+        }
+
+        /* Feedback */
+        .feedback-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: var(--font);
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 8px;
+        }
+
+        .feedback-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        /* Summary Screen */
+        .summary-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .summary-header .checkmark {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--success);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 16px;
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .summary-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .summary-card {
+            background: var(--light-grey);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .summary-value.good {
+            color: var(--success);
+        }
+
+        .summary-value.warning {
+            color: var(--amber);
+        }
+
+        .summary-value.bad {
+            color: var(--alert);
+        }
+
+        .attendance-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .attendance-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .attendance-badge.present {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+
+        .attendance-badge.absent {
+            background: rgba(230, 57, 70, 0.1);
+            color: var(--alert);
+        }
+
+        .submit-status {
+            text-align: center;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .submit-status.success {
+            display: block;
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+
+        .submit-status.error {
+            display: block;
+            background: rgba(230, 57, 70, 0.1);
+            color: var(--alert);
+        }
+
+        /* Fixed Bottom Button */
+        .bottom-action {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            padding: 16px 20px;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            z-index: 50;
+        }
+
+        /* Admin Dashboard */
+        .admin-screen {
+            background: var(--light-grey);
+        }
+
+        .admin-header {
+            background: var(--navy);
+            color: var(--white);
+            padding: 20px;
+            margin: -24px -20px 20px;
+        }
+
+        .admin-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .admin-back {
+            color: var(--light-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .date-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--white);
+            font-family: var(--font);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .filter-btn.active {
+            background: var(--navy);
+            color: var(--white);
+            border-color: var(--navy);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .metric-card.full-width {
+            grid-column: span 2;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .chart-container {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .data-table-container {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 2px solid var(--border);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .export-btn {
+            padding: 12px 20px;
+            background: var(--navy);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .feedback-log {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .feedback-entry {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .feedback-entry:last-child {
+            border-bottom: none;
+        }
+
+        .feedback-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .feedback-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Password Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: var(--font);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal-error {
+            color: var(--alert);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btns button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-family: var(--font);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .modal-cancel {
+            background: var(--light-grey);
+            border: none;
+            color: var(--text-primary);
+        }
+
+        .modal-submit {
+            background: var(--accent);
+            border: none;
+            color: var(--white);
+        }
+
+        /* Change Password Section */
+        .change-password-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .change-password-section h4 {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .change-password-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .change-password-section input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .password-status {
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .password-status.success {
+            display: block;
+            color: var(--success);
+        }
+
+        .password-status.error {
+            display: block;
+            color: var(--alert);
+        }
+
+        /* Offline indicator */
+        .offline-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--amber);
+            color: var(--white);
+            text-align: center;
+            padding: 8px;
+            font-size: 0.85rem;
+            z-index: 300;
+            display: none;
+        }
+
+        .offline-banner.show {
+            display: block;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--light-grey);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+
+        .mt-24 {
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-banner" id="offlineBanner">You're offline. Data will sync when connected.</div>
+
+    <div class="app">
+        <!-- Timer Bar (shown after huddle starts) -->
+        <div class="timer-bar" id="timerBar">
+            <div class="timer-display" id="timerDisplay">0:00</div>
+            <div class="progress-indicator" id="progressDots">
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-dot"></div>
+            </div>
+        </div>
+
+        <!-- Screen 0: Welcome -->
+        <div class="screen active" id="screen-welcome">
+            <div class="logo-container">
+                <!-- ResusReady Logo SVG -->
+                <svg viewBox="0 0 240 80" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Three people icons -->
+                    <circle cx="40" cy="20" r="8" fill="#1B2A4A"/>
+                    <path d="M28 45 Q28 32 40 32 Q52 32 52 45" fill="#1B2A4A"/>
+                    <circle cx="70" cy="16" r="9" fill="#1B2A4A"/>
+                    <path d="M56 45 Q56 28 70 28 Q84 28 84 45" fill="#1B2A4A"/>
+                    <circle cx="100" cy="20" r="8" fill="#1B2A4A"/>
+                    <path d="M88 45 Q88 32 100 32 Q112 32 112 45" fill="#1B2A4A"/>
+                    <!-- Heartbeat line -->
+                    <path d="M25 55 L45 55 L50 45 L55 65 L60 50 L65 55 L115 55" stroke="#E63946" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Text -->
+                    <text x="0" y="78" font-family="DM Sans, sans-serif" font-size="18" font-weight="700" fill="#E63946">RESUS</text>
+                    <text x="62" y="78" font-family="DM Sans, sans-serif" font-size="18" font-weight="700" fill="#1B2A4A">READY</text>
+                </svg>
+            </div>
+
+            <div class="date-display" id="dateDisplay"></div>
+
+            <div class="shift-selector">
+                <button class="shift-btn" id="btnAM" data-shift="AM">
+                    AM
+                    <span>0800</span>
+                </button>
+                <button class="shift-btn" id="btnPM" data-shift="PM">
+                    PM
+                    <span>2000</span>
+                </button>
+            </div>
+
+            <button class="btn-primary" id="btnStartHuddle">Start Huddle</button>
+
+            <div class="admin-link">
+                <a href="#" id="adminLink">Admin Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Screen 1: Attendance -->
+        <div class="screen has-timer" id="screen-attendance">
+            <div class="section-header">
+                <h2>Team Attendance</h2>
+                <p>Tap to mark present</p>
+            </div>
+
+            <div class="role-card" data-role="icuConsultant">
+                <div class="role-icon">&#128105;&#8205;&#9877;&#65039;</div>
+                <div class="role-title">ICU Consultant / Senior Registrar</div>
+                <div class="role-check">&#10003;</div>
+            </div>
+
+            <div class="role-card" data-role="icuExtReg">
+                <div class="role-icon">&#128104;&#8205;&#9877;&#65039;</div>
+                <div class="role-title">ICU External Registrar</div>
+                <div class="role-check">&#10003;</div>
+            </div>
+
+            <div class="role-card" data-role="icuCNC">
+                <div class="role-icon">&#128105;&#8205;&#9877;&#65039;</div>
+                <div class="role-title">ICU Clinical Nurse Consultant</div>
+                <div class="role-check">&#10003;</div>
+            </div>
+
+            <div class="role-card" data-role="genMedReg">
+                <div class="role-icon">&#128104;&#8205;&#9877;&#65039;</div>
+                <div class="role-title">General Medicine Registrar (MET/Code Blue)</div>
+                <div class="role-check">&#10003;</div>
+            </div>
+
+            <div class="additional-attendees">
+                <span class="additional-label">Other team members</span>
+                <div class="stepper">
+                    <button class="stepper-btn" id="btnDecrease">−</button>
+                    <span class="stepper-value" id="additionalCount">0</span>
+                    <button class="stepper-btn" id="btnIncrease">+</button>
+                </div>
+            </div>
+
+            <div class="bottom-action">
+                <button class="btn-primary" id="btnAttendanceNext">Next →</button>
+            </div>
+        </div>
+
+        <!-- Screen 2: Agenda Part 1 -->
+        <div class="screen has-timer" id="screen-agenda1">
+            <div class="section-header">
+                <h2>Huddle Agenda</h2>
+                <p>Tap items as discussed</p>
+            </div>
+
+            <div class="agenda-item" data-agenda="introductions">
+                <div class="agenda-check">&#10003;</div>
+                <div class="agenda-content">
+                    <div class="agenda-title">&#128075; Introductions</div>
+                    <div class="agenda-subtitle">Names, roles, experience</div>
+                </div>
+            </div>
+
+            <div class="agenda-item" data-agenda="roleAllocation">
+                <div class="agenda-check">&#10003;</div>
+                <div class="agenda-content">
+                    <div class="agenda-title">&#128203; Role Allocation</div>
+                    <div class="agenda-subtitle">Leader · Airway · Defib · Meds · History</div>
+                </div>
+            </div>
+
+            <div class="agenda-item" data-agenda="operationalFYIs">
+                <div class="agenda-check">&#10003;</div>
+                <div class="agenda-content">
+                    <div class="agenda-title">&#8505;&#65039; Operational FYIs</div>
+                    <div class="agenda-subtitle">Access, equipment, route changes</div>
+                </div>
+            </div>
+
+            <div class="agenda-item" data-agenda="highRiskPatients">
+                <div class="agenda-check">&#10003;</div>
+                <div class="agenda-content">
+                    <div class="agenda-title">&#9888;&#65039; High-Risk Patients</div>
+                    <div class="agenda-subtitle">Flag unstable patients (1-2 one-liners)</div>
+                </div>
+            </div>
+
+            <div class="bottom-action">
+                <button class="btn-primary" id="btnAgenda1Next">Next →</button>
+            </div>
+        </div>
+
+        <!-- Screen 3: Agenda Part 2 -->
+        <div class="screen has-timer" id="screen-agenda2">
+            <div class="section-header">
+                <h2>Huddle Agenda</h2>
+                <p>Tap items as discussed</p>
+            </div>
+
+            <div class="agenda-item" data-agenda="recentLearning">
+                <div class="agenda-check">&#10003;</div>
+                <div class="agenda-content">
+                    <div class="agenda-title">&#128161; Recent Learning</div>
+                    <div class="agenda-subtitle">≤30 second teaching pearl</div>
+                </div>
+            </div>
+
+            <div class="agenda-item" data-agenda="communicationCommitment">
+                <div class="agenda-check">&#10003;</div>
+                <div class="agenda-content">
+                    <div class="agenda-title">&#128172; Communication Commitment</div>
+                    <div class="agenda-subtitle">Closed-loop communication, speak-up culture</div>
+                </div>
+            </div>
+
+            <div class="agenda-item" data-agenda="escalation">
+                <div class="agenda-check">&#10003;</div>
+                <div class="agenda-content">
+                    <div class="agenda-title">&#128222; Simultaneous Codes & Escalation</div>
+                    <div class="agenda-subtitle">Who leads each · How to get extra help</div>
+                </div>
+            </div>
+
+            <div class="bottom-action">
+                <button class="btn-primary" id="btnAgenda2Next">Next →</button>
+            </div>
+        </div>
+
+        <!-- Screen 4: Feedback -->
+        <div class="screen has-timer" id="screen-feedback">
+            <div class="section-header">
+                <h2>Quick Feedback</h2>
+                <p>(Optional)</p>
+            </div>
+
+            <textarea class="feedback-textarea" id="feedbackText" placeholder="Any comments on today's huddle? Issues, suggestions, wins..." maxlength="500"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/500</div>
+
+            <div class="bottom-action">
+                <button class="btn-primary success" id="btnFinishHuddle">Finish Huddle →</button>
+            </div>
+        </div>
+
+        <!-- Screen 5: Summary -->
+        <div class="screen has-timer" id="screen-summary">
+            <div class="summary-header">
+                <div class="checkmark">&#10003;</div>
+                <h2>Huddle Complete</h2>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-row">
+                    <span class="summary-label">Date</span>
+                    <span class="summary-value" id="summaryDate"></span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Shift</span>
+                    <span class="summary-value" id="summaryShift"></span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Duration</span>
+                    <span class="summary-value" id="summaryDuration"></span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Agenda Items</span>
+                    <span class="summary-value" id="summaryAgenda"></span>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-label mb-16">Attendance</div>
+                <div class="attendance-summary" id="attendanceSummary"></div>
+            </div>
+
+            <div id="feedbackSummary" class="summary-card hidden">
+                <div class="summary-label mb-16">Feedback</div>
+                <div id="feedbackSummaryText" style="font-size: 0.9rem; line-height: 1.4;"></div>
+            </div>
+
+            <div class="submit-status" id="submitStatus"></div>
+
+            <button class="btn-primary" id="btnSubmit">Submit</button>
+            <button class="btn-secondary hidden" id="btnNewHuddle">New Huddle</button>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div class="screen admin-screen" id="screen-admin">
+            <div class="admin-header">
+                <a href="#" class="admin-back" id="adminBack">← Back to Huddle</a>
+                <h2>Admin Dashboard</h2>
+            </div>
+
+            <div class="date-filter">
+                <button class="filter-btn active" data-range="7">Last 7 days</button>
+                <button class="filter-btn" data-range="30">Last 30 days</button>
+                <button class="filter-btn" data-range="all">All time</button>
+            </div>
+
+            <div class="metrics-grid" id="metricsGrid">
+                <div class="metric-card">
+                    <div class="metric-value" id="metricTotal">—</div>
+                    <div class="metric-label">Total Huddles</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="metricDuration">—</div>
+                    <div class="metric-label">Avg Duration</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="metricAttendance">—</div>
+                    <div class="metric-label">Attendance Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="metricAgenda">—</div>
+                    <div class="metric-label">Agenda Completion</div>
+                </div>
+                <div class="metric-card full-width">
+                    <div class="metric-value" id="metricOnTime">—</div>
+                    <div class="metric-label">On-Time Rate (≤5 min)</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Huddles Over Time</div>
+                <canvas id="chartHuddles" height="200"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Duration Trend</div>
+                <canvas id="chartDuration" height="200"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Attendance by Role</div>
+                <canvas id="chartAttendance" height="180"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Agenda Item Completion</div>
+                <canvas id="chartAgenda" height="220"></canvas>
+            </div>
+
+            <button class="export-btn" id="btnExport">Export CSV</button>
+
+            <div class="data-table-container">
+                <div class="chart-title">Huddle Log</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Shift</th>
+                            <th>Duration</th>
+                            <th>Roles</th>
+                            <th>Agenda</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="feedback-log">
+                <div class="chart-title">Feedback Log</div>
+                <div id="feedbackLog"></div>
+            </div>
+
+            <div class="change-password-section">
+                <h4>Change Admin Password</h4>
+                <input type="password" id="newPassword" placeholder="New password">
+                <input type="password" id="confirmPassword" placeholder="Confirm password">
+                <div class="password-status" id="passwordStatus"></div>
+                <button class="btn-primary" id="btnChangePassword" style="font-size: 0.9rem; padding: 12px;">Update Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay hidden" id="passwordModal">
+        <div class="modal-content">
+            <h3>Admin Access</h3>
+            <input type="password" class="modal-input" id="adminPassword" placeholder="Enter password">
+            <div class="modal-error" id="passwordError">Incorrect password</div>
+            <div class="modal-btns">
+                <button class="modal-cancel" id="btnPasswordCancel">Cancel</button>
+                <button class="modal-submit" id="btnPasswordSubmit">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc, query, orderBy, where, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq_R2ya13zcM2cMHAWCkjmI-kP0Ku36zk",
+            authDomain: "resusready-9a912.firebaseapp.com",
+            projectId: "resusready-9a912",
+            storageBucket: "resusready-9a912.firebasestorage.app",
+            messagingSenderId: "53738070266",
+            appId: "1:53738070266:web:7350239570b5cf77492943",
+            measurementId: "G-DBXM0F6N30"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Utility functions
+        const $ = id => document.getElementById(id);
+        const $$ = sel => document.querySelectorAll(sel);
+
+        // SHA-256 hash function
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // App State
+        const state = {
+            shift: null,
+            startTime: null,
+            endTime: null,
+            attendance: {
+                icuConsultant: false,
+                icuExtReg: false,
+                icuCNC: false,
+                genMedReg: false,
+                additionalAttendees: 0
+            },
+            agenda: {
+                introductions: false,
+                roleAllocation: false,
+                operationalFYIs: false,
+                highRiskPatients: false,
+                recentLearning: false,
+                communicationCommitment: false,
+                escalation: false
+            },
+            feedback: '',
+            currentScreen: 0,
+            timerInterval: null
+        };
+
+        // Screen management
+        const screens = ['welcome', 'attendance', 'agenda1', 'agenda2', 'feedback', 'summary', 'admin'];
+
+        function showScreen(name) {
+            screens.forEach(s => {
+                $(`screen-${s}`).classList.remove('active');
+            });
+            $(`screen-${name}`).classList.add('active');
+
+            const screenIndex = screens.indexOf(name);
+            if (screenIndex > 0 && screenIndex < 6) {
+                state.currentScreen = screenIndex;
+                updateProgressDots();
+            }
+        }
+
+        function updateProgressDots() {
+            const dots = $$('#progressDots .progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'complete');
+                if (i < state.currentScreen - 1) {
+                    dot.classList.add('complete');
+                } else if (i === state.currentScreen - 1) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        // Timer
+        function startTimer() {
+            state.startTime = Date.now();
+            $('timerBar').classList.add('active');
+
+            state.timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+                const mins = Math.floor(elapsed / 60);
+                const secs = elapsed % 60;
+                $('timerDisplay').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                if (elapsed >= 300 && !$('timerBar').classList.contains('overtime')) {
+                    $('timerBar').classList.add('overtime');
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            state.endTime = Date.now();
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+            }
+        }
+
+        // Initialize date and shift
+        function initWelcome() {
+            const now = new Date();
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            $('dateDisplay').textContent = now.toLocaleDateString('en-AU', options);
+
+            // Auto-select shift based on time
+            const hour = now.getHours();
+            if (hour >= 6 && hour < 14) {
+                selectShift('AM');
+            } else {
+                selectShift('PM');
+            }
+        }
+
+        function selectShift(shift) {
+            state.shift = shift;
+            $('btnAM').classList.toggle('selected', shift === 'AM');
+            $('btnPM').classList.toggle('selected', shift === 'PM');
+        }
+
+        // Event listeners - Welcome
+        $('btnAM').addEventListener('click', () => selectShift('AM'));
+        $('btnPM').addEventListener('click', () => selectShift('PM'));
+
+        $('btnStartHuddle').addEventListener('click', () => {
+            startTimer();
+            showScreen('attendance');
+        });
+
+        // Attendance
+        $$('.role-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const role = card.dataset.role;
+                state.attendance[role] = !state.attendance[role];
+                card.classList.toggle('present', state.attendance[role]);
+            });
+        });
+
+        $('btnDecrease').addEventListener('click', () => {
+            if (state.attendance.additionalAttendees > 0) {
+                state.attendance.additionalAttendees--;
+                $('additionalCount').textContent = state.attendance.additionalAttendees;
+            }
+        });
+
+        $('btnIncrease').addEventListener('click', () => {
+            state.attendance.additionalAttendees++;
+            $('additionalCount').textContent = state.attendance.additionalAttendees;
+        });
+
+        $('btnAttendanceNext').addEventListener('click', () => showScreen('agenda1'));
+
+        // Agenda
+        $$('.agenda-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const agenda = item.dataset.agenda;
+                state.agenda[agenda] = !state.agenda[agenda];
+                item.classList.toggle('discussed', state.agenda[agenda]);
+            });
+        });
+
+        $('btnAgenda1Next').addEventListener('click', () => showScreen('agenda2'));
+        $('btnAgenda2Next').addEventListener('click', () => showScreen('feedback'));
+
+        // Feedback
+        $('feedbackText').addEventListener('input', (e) => {
+            state.feedback = e.target.value;
+            $('charCount').textContent = e.target.value.length;
+        });
+
+        $('btnFinishHuddle').addEventListener('click', () => {
+            stopTimer();
+            showSummary();
+            showScreen('summary');
+        });
+
+        // Summary
+        function showSummary() {
+            const date = new Date(state.startTime);
+            $('summaryDate').textContent = date.toLocaleDateString('en-AU', {
+                weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+            });
+            $('summaryShift').textContent = state.shift;
+
+            const durationSecs = Math.floor((state.endTime - state.startTime) / 1000);
+            const mins = Math.floor(durationSecs / 60);
+            const secs = durationSecs % 60;
+            const durationEl = $('summaryDuration');
+            durationEl.textContent = `${mins}m ${secs}s`;
+
+            if (durationSecs <= 300) {
+                durationEl.className = 'summary-value good';
+            } else if (durationSecs <= 420) {
+                durationEl.className = 'summary-value warning';
+            } else {
+                durationEl.className = 'summary-value bad';
+            }
+
+            const agendaCount = Object.values(state.agenda).filter(v => v).length;
+            $('summaryAgenda').textContent = `${agendaCount}/7`;
+
+            // Attendance summary
+            const roles = {
+                icuConsultant: 'ICU Consultant',
+                icuExtReg: 'ICU Ext Reg',
+                icuCNC: 'ICU CNC',
+                genMedReg: 'Gen Med Reg'
+            };
+
+            let attendanceHTML = '';
+            for (const [key, label] of Object.entries(roles)) {
+                const present = state.attendance[key];
+                attendanceHTML += `<span class="attendance-badge ${present ? 'present' : 'absent'}">${present ? '✓' : '✗'} ${label}</span>`;
+            }
+            if (state.attendance.additionalAttendees > 0) {
+                attendanceHTML += `<span class="attendance-badge present">+${state.attendance.additionalAttendees} others</span>`;
+            }
+            $('attendanceSummary').innerHTML = attendanceHTML;
+
+            // Feedback
+            if (state.feedback.trim()) {
+                $('feedbackSummary').classList.remove('hidden');
+                $('feedbackSummaryText').textContent = state.feedback;
+            } else {
+                $('feedbackSummary').classList.add('hidden');
+            }
+        }
+
+        // Submit to Firebase
+        $('btnSubmit').addEventListener('click', async () => {
+            $('btnSubmit').disabled = true;
+            $('btnSubmit').innerHTML = '<div class="spinner"></div>';
+
+            const durationSecs = Math.floor((state.endTime - state.startTime) / 1000);
+            const agendaCount = Object.values(state.agenda).filter(v => v).length;
+            const date = new Date(state.startTime);
+
+            const huddleData = {
+                date: date.toISOString().split('T')[0],
+                shift: state.shift,
+                startTime: state.startTime,
+                endTime: state.endTime,
+                durationSeconds: durationSecs,
+                attendance: { ...state.attendance },
+                agenda: { ...state.agenda },
+                agendaCompletionCount: agendaCount,
+                agendaCompletionTotal: 7,
+                feedback: state.feedback || null,
+                submittedAt: Date.now()
+            };
+
+            try {
+                await addDoc(collection(db, 'huddles'), huddleData);
+
+                // Clear any queued huddles
+                const queued = JSON.parse(localStorage.getItem('queuedHuddles') || '[]');
+                for (const qh of queued) {
+                    try {
+                        await addDoc(collection(db, 'huddles'), qh);
+                    } catch (e) {
+                        console.error('Failed to sync queued huddle', e);
+                    }
+                }
+                localStorage.setItem('queuedHuddles', '[]');
+
+                $('submitStatus').textContent = 'Saved ✓';
+                $('submitStatus').className = 'submit-status success';
+                $('btnSubmit').classList.add('hidden');
+                $('btnNewHuddle').classList.remove('hidden');
+            } catch (error) {
+                console.error('Submit error:', error);
+
+                // Queue for later
+                const queued = JSON.parse(localStorage.getItem('queuedHuddles') || '[]');
+                queued.push(huddleData);
+                localStorage.setItem('queuedHuddles', JSON.stringify(queued));
+
+                $('submitStatus').textContent = 'Saved locally. Will sync when online.';
+                $('submitStatus').className = 'submit-status error';
+                $('btnSubmit').classList.add('hidden');
+                $('btnNewHuddle').classList.remove('hidden');
+            }
+        });
+
+        $('btnNewHuddle').addEventListener('click', () => {
+            // Reset state
+            state.shift = null;
+            state.startTime = null;
+            state.endTime = null;
+            state.attendance = { icuConsultant: false, icuExtReg: false, icuCNC: false, genMedReg: false, additionalAttendees: 0 };
+            state.agenda = { introductions: false, roleAllocation: false, operationalFYIs: false, highRiskPatients: false, recentLearning: false, communicationCommitment: false, escalation: false };
+            state.feedback = '';
+            state.currentScreen = 0;
+
+            // Reset UI
+            $('timerBar').classList.remove('active', 'overtime');
+            $('timerDisplay').textContent = '0:00';
+            $$('.role-card').forEach(c => c.classList.remove('present'));
+            $('additionalCount').textContent = '0';
+            $$('.agenda-item').forEach(i => i.classList.remove('discussed'));
+            $('feedbackText').value = '';
+            $('charCount').textContent = '0';
+            $('submitStatus').className = 'submit-status';
+            $('btnSubmit').classList.remove('hidden');
+            $('btnSubmit').disabled = false;
+            $('btnSubmit').textContent = 'Submit';
+            $('btnNewHuddle').classList.add('hidden');
+
+            initWelcome();
+            showScreen('welcome');
+        });
+
+        // Admin Dashboard
+        let adminAuthenticated = false;
+
+        $('adminLink').addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            if (sessionStorage.getItem('adminAuth') === 'true') {
+                adminAuthenticated = true;
+                showScreen('admin');
+                loadAdminData();
+                return;
+            }
+
+            $('passwordModal').classList.remove('hidden');
+            $('adminPassword').focus();
+        });
+
+        $('btnPasswordCancel').addEventListener('click', () => {
+            $('passwordModal').classList.add('hidden');
+            $('adminPassword').value = '';
+            $('passwordError').style.display = 'none';
+        });
+
+        $('btnPasswordSubmit').addEventListener('click', async () => {
+            const password = $('adminPassword').value;
+            const hash = await sha256(password);
+
+            // Check or create config
+            const configRef = doc(db, 'config', 'settings');
+            let configSnap;
+
+            try {
+                configSnap = await getDoc(configRef);
+
+                if (!configSnap.exists()) {
+                    // Auto-create with default password
+                    const defaultHash = await sha256('9876');
+                    await setDoc(configRef, { passwordHash: defaultHash });
+                    configSnap = await getDoc(configRef);
+                }
+
+                const storedHash = configSnap.data().passwordHash;
+
+                if (hash === storedHash) {
+                    adminAuthenticated = true;
+                    sessionStorage.setItem('adminAuth', 'true');
+                    $('passwordModal').classList.add('hidden');
+                    $('adminPassword').value = '';
+                    $('passwordError').style.display = 'none';
+                    showScreen('admin');
+                    loadAdminData();
+                } else {
+                    $('passwordError').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                $('passwordError').textContent = 'Connection error';
+                $('passwordError').style.display = 'block';
+            }
+        });
+
+        $('adminPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') $('btnPasswordSubmit').click();
+        });
+
+        $('adminBack').addEventListener('click', (e) => {
+            e.preventDefault();
+            showScreen('welcome');
+        });
+
+        // Date filter
+        let currentRange = 7;
+        $$('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                $$('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentRange = btn.dataset.range === 'all' ? 'all' : parseInt(btn.dataset.range);
+                loadAdminData();
+            });
+        });
+
+        // Load admin data
+        let allHuddles = [];
+        let chartInstances = {};
+
+        async function loadAdminData() {
+            try {
+                const q = query(collection(db, 'huddles'), orderBy('startTime', 'desc'));
+                const snapshot = await getDocs(q);
+                allHuddles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                const filtered = filterHuddles();
+                updateMetrics(filtered);
+                updateCharts(filtered);
+                updateTable(filtered);
+                updateFeedbackLog(filtered);
+            } catch (error) {
+                console.error('Load error:', error);
+            }
+        }
+
+        function filterHuddles() {
+            if (currentRange === 'all') return allHuddles;
+
+            const cutoff = Date.now() - (currentRange * 24 * 60 * 60 * 1000);
+            return allHuddles.filter(h => h.startTime >= cutoff);
+        }
+
+        function updateMetrics(huddles) {
+            $('metricTotal').textContent = huddles.length;
+
+            if (huddles.length === 0) {
+                $('metricDuration').textContent = '—';
+                $('metricAttendance').textContent = '—';
+                $('metricAgenda').textContent = '—';
+                $('metricOnTime').textContent = '—';
+                return;
+            }
+
+            // Avg duration
+            const avgDuration = huddles.reduce((sum, h) => sum + h.durationSeconds, 0) / huddles.length;
+            const mins = Math.floor(avgDuration / 60);
+            const secs = Math.round(avgDuration % 60);
+            $('metricDuration').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+            // Attendance rate
+            const totalSlots = huddles.length * 4;
+            const filledSlots = huddles.reduce((sum, h) => {
+                return sum + (h.attendance.icuConsultant ? 1 : 0) + (h.attendance.icuExtReg ? 1 : 0) +
+                       (h.attendance.icuCNC ? 1 : 0) + (h.attendance.genMedReg ? 1 : 0);
+            }, 0);
+            $('metricAttendance').textContent = `${Math.round(filledSlots / totalSlots * 100)}%`;
+
+            // Agenda completion
+            const avgAgenda = huddles.reduce((sum, h) => sum + h.agendaCompletionCount, 0) / huddles.length;
+            $('metricAgenda').textContent = `${Math.round(avgAgenda / 7 * 100)}%`;
+
+            // On-time rate
+            const onTime = huddles.filter(h => h.durationSeconds <= 300).length;
+            $('metricOnTime').textContent = `${Math.round(onTime / huddles.length * 100)}%`;
+        }
+
+        function updateCharts(huddles) {
+            // Destroy existing charts
+            Object.values(chartInstances).forEach(c => c.destroy());
+            chartInstances = {};
+
+            if (huddles.length === 0) return;
+
+            // Group by date
+            const byDate = {};
+            huddles.forEach(h => {
+                if (!byDate[h.date]) byDate[h.date] = { AM: 0, PM: 0 };
+                byDate[h.date][h.shift]++;
+            });
+
+            const dates = Object.keys(byDate).sort();
+
+            // Huddles over time chart
+            chartInstances.huddles = new Chart($('chartHuddles'), {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        { label: 'AM', data: dates.map(d => byDate[d].AM), backgroundColor: '#4A90D9' },
+                        { label: 'PM', data: dates.map(d => byDate[d].PM), backgroundColor: '#1B2A4A' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Duration trend
+            const durationByDate = {};
+            huddles.forEach(h => {
+                if (!durationByDate[h.date]) durationByDate[h.date] = [];
+                durationByDate[h.date].push(h.durationSeconds / 60);
+            });
+
+            chartInstances.duration = new Chart($('chartDuration'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Duration (min)',
+                        data: dates.map(d => {
+                            const vals = durationByDate[d];
+                            return vals.reduce((a, b) => a + b, 0) / vals.length;
+                        }),
+                        borderColor: '#4A90D9',
+                        tension: 0.3,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: {
+                        annotation: {
+                            annotations: {
+                                line1: { type: 'line', yMin: 5, yMax: 5, borderColor: '#E63946', borderDash: [5, 5] }
+                            }
+                        },
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Attendance by role
+            const roles = ['icuConsultant', 'icuExtReg', 'icuCNC', 'genMedReg'];
+            const roleLabels = ['ICU Consultant', 'ICU Ext Reg', 'ICU CNC', 'Gen Med Reg'];
+            const roleAttendance = roles.map(r => {
+                const present = huddles.filter(h => h.attendance[r]).length;
+                return Math.round(present / huddles.length * 100);
+            });
+
+            chartInstances.attendance = new Chart($('chartAttendance'), {
+                type: 'bar',
+                data: {
+                    labels: roleLabels,
+                    datasets: [{ data: roleAttendance, backgroundColor: '#4A90D9' }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    scales: { x: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Agenda completion
+            const agendaItems = ['introductions', 'roleAllocation', 'operationalFYIs', 'highRiskPatients', 'recentLearning', 'communicationCommitment', 'escalation'];
+            const agendaLabels = ['Introductions', 'Role Allocation', 'Operational FYIs', 'High-Risk Patients', 'Recent Learning', 'Communication', 'Escalation'];
+            const agendaCompletion = agendaItems.map(a => {
+                const completed = huddles.filter(h => h.agenda[a]).length;
+                return Math.round(completed / huddles.length * 100);
+            });
+
+            chartInstances.agenda = new Chart($('chartAgenda'), {
+                type: 'bar',
+                data: {
+                    labels: agendaLabels,
+                    datasets: [{ data: agendaCompletion, backgroundColor: '#2ECC71' }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    scales: { x: { beginAtZero: true, max: 100 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateTable(huddles) {
+            const tbody = $('dataTableBody');
+            tbody.innerHTML = huddles.slice(0, 50).map(h => {
+                const mins = Math.floor(h.durationSeconds / 60);
+                const secs = h.durationSeconds % 60;
+                const roles = [
+                    h.attendance.icuConsultant ? '✓' : '✗',
+                    h.attendance.icuExtReg ? '✓' : '✗',
+                    h.attendance.icuCNC ? '✓' : '✗',
+                    h.attendance.genMedReg ? '✓' : '✗'
+                ].join(' ');
+                return `<tr>
+                    <td>${h.date}</td>
+                    <td>${h.shift}</td>
+                    <td>${mins}:${secs.toString().padStart(2, '0')}</td>
+                    <td>${roles}</td>
+                    <td>${h.agendaCompletionCount}/7</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateFeedbackLog(huddles) {
+            const withFeedback = huddles.filter(h => h.feedback);
+            const log = $('feedbackLog');
+
+            if (withFeedback.length === 0) {
+                log.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.9rem;">No feedback recorded</p>';
+                return;
+            }
+
+            log.innerHTML = withFeedback.slice(0, 20).map(h => `
+                <div class="feedback-entry">
+                    <div class="feedback-meta">${h.date} · ${h.shift}</div>
+                    <div class="feedback-text">${h.feedback}</div>
+                </div>
+            `).join('');
+        }
+
+        // Export CSV
+        $('btnExport').addEventListener('click', () => {
+            const filtered = filterHuddles();
+            const headers = ['Date', 'Shift', 'Duration (s)', 'ICU Consultant', 'ICU Ext Reg', 'ICU CNC', 'Gen Med Reg', 'Additional', 'Agenda Completed', 'Feedback'];
+            const rows = filtered.map(h => [
+                h.date,
+                h.shift,
+                h.durationSeconds,
+                h.attendance.icuConsultant ? 1 : 0,
+                h.attendance.icuExtReg ? 1 : 0,
+                h.attendance.icuCNC ? 1 : 0,
+                h.attendance.genMedReg ? 1 : 0,
+                h.attendance.additionalAttendees,
+                h.agendaCompletionCount,
+                `"${(h.feedback || '').replace(/"/g, '""')}"`
+            ]);
+
+            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `resusready-export-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        });
+
+        // Change password
+        $('btnChangePassword').addEventListener('click', async () => {
+            const newPw = $('newPassword').value;
+            const confirmPw = $('confirmPassword').value;
+            const status = $('passwordStatus');
+
+            if (!newPw || newPw.length < 4) {
+                status.textContent = 'Password must be at least 4 characters';
+                status.className = 'password-status error';
+                return;
+            }
+
+            if (newPw !== confirmPw) {
+                status.textContent = 'Passwords do not match';
+                status.className = 'password-status error';
+                return;
+            }
+
+            try {
+                const hash = await sha256(newPw);
+                await setDoc(doc(db, 'config', 'settings'), { passwordHash: hash });
+                status.textContent = 'Password updated successfully';
+                status.className = 'password-status success';
+                $('newPassword').value = '';
+                $('confirmPassword').value = '';
+            } catch (error) {
+                status.textContent = 'Failed to update password';
+                status.className = 'password-status error';
+            }
+        });
+
+        // Offline detection
+        window.addEventListener('online', () => $('offlineBanner').classList.remove('show'));
+        window.addEventListener('offline', () => $('offlineBanner').classList.add('show'));
+
+        // Try to sync queued huddles on load
+        async function syncQueuedHuddles() {
+            const queued = JSON.parse(localStorage.getItem('queuedHuddles') || '[]');
+            if (queued.length === 0) return;
+
+            const remaining = [];
+            for (const h of queued) {
+                try {
+                    await addDoc(collection(db, 'huddles'), h);
+                } catch (e) {
+                    remaining.push(h);
+                }
+            }
+            localStorage.setItem('queuedHuddles', JSON.stringify(remaining));
+        }
+
+        // Initialize
+        initWelcome();
+        syncQueuedHuddles();
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                const CACHE_NAME = 'resusready-v1';
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                self.addEventListener('fetch', e => {
+                    if (e.request.url.includes('firebasestorage') || e.request.url.includes('firestore')) return;
+                    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                });
+            `)).catch(() => {});
+        }
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</body>
+</html>
