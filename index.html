@@ -139,9 +139,11 @@
             margin: 40px 0 32px;
         }
 
-        .logo-container svg {
-            width: 260px;
-            height: auto;
+        .app-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: -0.5px;
         }
 
         .date-display {
@@ -953,34 +955,7 @@
         <!-- Screen 0: Welcome -->
         <div class="screen active" id="screen-welcome">
             <div class="logo-container">
-                <!-- ResusReady Logo SVG -->
-                <svg viewBox="0 0 240 70" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Icon section (left) -->
-                    <g transform="translate(5, 5)">
-                        <!-- Navy arc wrapping over the people -->
-                        <path d="M5 45 C5 15, 75 15, 75 45" stroke="#1B2A4A" stroke-width="5" fill="none" stroke-linecap="round"/>
-
-                        <!-- Red ECG trace on top of the arc -->
-                        <path d="M15 32 L28 32 L33 22 L40 42 L47 28 L52 32 L65 32" stroke="#E63946" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-
-                        <!-- Three overlapping people silhouettes -->
-                        <!-- Left person (behind, smaller) -->
-                        <circle cx="22" cy="38" r="8" fill="#1B2A4A"/>
-                        <ellipse cx="22" cy="56" rx="12" ry="10" fill="#1B2A4A"/>
-
-                        <!-- Right person (behind, smaller) -->
-                        <circle cx="58" cy="38" r="8" fill="#1B2A4A"/>
-                        <ellipse cx="58" cy="56" rx="12" ry="10" fill="#1B2A4A"/>
-
-                        <!-- Middle person (front, larger) -->
-                        <circle cx="40" cy="35" r="10" fill="#1B2A4A"/>
-                        <ellipse cx="40" cy="55" rx="14" ry="12" fill="#1B2A4A"/>
-                    </g>
-
-                    <!-- Text section (right) - stacked RESUS / READY -->
-                    <text x="100" y="32" font-family="DM Sans, sans-serif" font-size="26" font-weight="700" fill="#1B2A4A">RESUS</text>
-                    <text x="100" y="58" font-family="DM Sans, sans-serif" font-size="26" font-weight="700" fill="#1B2A4A">READY</text>
-                </svg>
+                <h1 class="app-title">ResusReady</h1>
             </div>
 
             <div class="date-display" id="dateDisplay"></div>
