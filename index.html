@@ -997,15 +997,9 @@
                 <div class="role-check">&#10003;</div>
             </div>
 
-            <div class="role-card" data-role="icuSeniorReg">
+            <div class="role-card" data-role="icuReg">
                 <div class="role-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 13c-4.42 0-8 1.79-8 4v2h16v-2c0-2.21-3.58-4-8-4z"/></svg></div>
-                <div class="role-title">ICU Senior Registrar</div>
-                <div class="role-check">&#10003;</div>
-            </div>
-
-            <div class="role-card" data-role="icuExtReg">
-                <div class="role-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="4"/><path d="M12 13c-4.42 0-8 1.79-8 4v2h16v-2c0-2.21-3.58-4-8-4z"/></svg></div>
-                <div class="role-title">ICU External Registrar</div>
+                <div class="role-title">ICU Registrar</div>
                 <div class="role-check">&#10003;</div>
             </div>
 
@@ -1306,8 +1300,7 @@
             attendance: {
                 icuCNC: false,
                 icuConsultant: false,
-                icuSeniorReg: false,
-                icuExtReg: false,
+                icuReg: false,
                 genMedReg: false,
                 otherAttendees: ''
             },
@@ -1489,8 +1482,7 @@
             const roles = {
                 icuCNC: 'ICU CNC',
                 icuConsultant: 'ICU Consultant',
-                icuSeniorReg: 'ICU Senior Reg',
-                icuExtReg: 'ICU Ext Reg',
+                icuReg: 'ICU Registrar',
                 genMedReg: 'Gen Med Reg'
             };
 
@@ -1574,7 +1566,7 @@
             state.shift = null;
             state.startTime = null;
             state.endTime = null;
-            state.attendance = { icuCNC: false, icuConsultant: false, icuSeniorReg: false, icuExtReg: false, genMedReg: false, otherAttendees: '' };
+            state.attendance = { icuCNC: false, icuConsultant: false, icuReg: false, genMedReg: false, otherAttendees: '' };
             state.agenda = { introductions: false, roleAllocation: false, operationalFYIs: false, highRiskPatients: false, recentLearning: false, communicationCommitment: false, escalation: false };
             state.feedback = '';
             state.currentScreen = 0;
@@ -1724,12 +1716,13 @@
             const secs = Math.round(avgDuration % 60);
             $('metricDuration').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
 
-            // Attendance rate (5 core roles)
-            const totalSlots = huddles.length * 5;
+            // Attendance rate (4 core roles)
+            const totalSlots = huddles.length * 4;
             const filledSlots = huddles.reduce((sum, h) => {
+                // Support both old format (icuSeniorReg/icuExtReg) and new format (icuReg)
+                const icuRegPresent = h.attendance.icuReg || h.attendance.icuSeniorReg || h.attendance.icuExtReg;
                 return sum + (h.attendance.icuCNC ? 1 : 0) + (h.attendance.icuConsultant ? 1 : 0) +
-                       (h.attendance.icuSeniorReg ? 1 : 0) + (h.attendance.icuExtReg ? 1 : 0) +
-                       (h.attendance.genMedReg ? 1 : 0);
+                       (icuRegPresent ? 1 : 0) + (h.attendance.genMedReg ? 1 : 0);
             }, 0);
             $('metricAttendance').textContent = `${Math.round(filledSlots / totalSlots * 100)}%`;
 
@@ -1812,10 +1805,16 @@
             });
 
             // Attendance by role
-            const roles = ['icuCNC', 'icuConsultant', 'icuSeniorReg', 'icuExtReg', 'genMedReg'];
-            const roleLabels = ['ICU CNC', 'ICU Consultant', 'ICU Senior Reg', 'ICU Ext Reg', 'Gen Med Reg'];
+            const roles = ['icuCNC', 'icuConsultant', 'icuReg', 'genMedReg'];
+            const roleLabels = ['ICU CNC', 'ICU Consultant', 'ICU Registrar', 'Gen Med Reg'];
             const roleAttendance = roles.map(r => {
-                const present = huddles.filter(h => h.attendance[r]).length;
+                const present = huddles.filter(h => {
+                    // Support both old format and new format for icuReg
+                    if (r === 'icuReg') {
+                        return h.attendance.icuReg || h.attendance.icuSeniorReg || h.attendance.icuExtReg;
+                    }
+                    return h.attendance[r];
+                }).length;
                 return Math.round(present / huddles.length * 100);
             });
 
@@ -1861,10 +1860,11 @@
             tbody.innerHTML = huddles.slice(0, 50).map(h => {
                 const mins = Math.floor(h.durationSeconds / 60);
                 const secs = h.durationSeconds % 60;
+                const icuRegPresent = h.attendance.icuReg || h.attendance.icuSeniorReg || h.attendance.icuExtReg;
                 const roles = [
-                    h.attendance.icuConsultant ? '✓' : '✗',
-                    h.attendance.icuExtReg ? '✓' : '✗',
                     h.attendance.icuCNC ? '✓' : '✗',
+                    h.attendance.icuConsultant ? '✓' : '✗',
+                    icuRegPresent ? '✓' : '✗',
                     h.attendance.genMedReg ? '✓' : '✗'
                 ].join(' ');
                 return `<tr>
@@ -1897,20 +1897,22 @@
         // Export CSV
         $('btnExport').addEventListener('click', () => {
             const filtered = filterHuddles();
-            const headers = ['Date', 'Shift', 'Duration (s)', 'ICU CNC', 'ICU Consultant', 'ICU Senior Reg', 'ICU Ext Reg', 'Gen Med Reg', 'Other Attendees', 'Agenda Completed', 'Feedback'];
-            const rows = filtered.map(h => [
-                h.date,
-                h.shift,
-                h.durationSeconds,
-                h.attendance.icuCNC ? 1 : 0,
-                h.attendance.icuConsultant ? 1 : 0,
-                h.attendance.icuSeniorReg ? 1 : 0,
-                h.attendance.icuExtReg ? 1 : 0,
-                h.attendance.genMedReg ? 1 : 0,
-                `"${(h.attendance.otherAttendees || h.attendance.additionalAttendees || '').toString().replace(/"/g, '""')}"`,
-                h.agendaCompletionCount,
-                `"${(h.feedback || '').replace(/"/g, '""')}"`
-            ]);
+            const headers = ['Date', 'Shift', 'Duration (s)', 'ICU CNC', 'ICU Consultant', 'ICU Registrar', 'Gen Med Reg', 'Other Attendees', 'Agenda Completed', 'Feedback'];
+            const rows = filtered.map(h => {
+                const icuRegPresent = h.attendance.icuReg || h.attendance.icuSeniorReg || h.attendance.icuExtReg;
+                return [
+                    h.date,
+                    h.shift,
+                    h.durationSeconds,
+                    h.attendance.icuCNC ? 1 : 0,
+                    h.attendance.icuConsultant ? 1 : 0,
+                    icuRegPresent ? 1 : 0,
+                    h.attendance.genMedReg ? 1 : 0,
+                    `"${(h.attendance.otherAttendees || h.attendance.additionalAttendees || '').toString().replace(/"/g, '""')}"`,
+                    h.agendaCompletionCount,
+                    `"${(h.feedback || '').replace(/"/g, '""')}"`
+                ];
+            });
 
             const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
             const blob = new Blob([csv], { type: 'text/csv' });
