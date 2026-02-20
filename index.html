@@ -140,7 +140,7 @@
         }
 
         .logo-container svg {
-            width: 240px;
+            width: 260px;
             height: auto;
         }
 
@@ -952,27 +952,32 @@
         <div class="screen active" id="screen-welcome">
             <div class="logo-container">
                 <!-- ResusReady Logo SVG -->
-                <svg viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 240 70" xmlns="http://www.w3.org/2000/svg">
                     <!-- Icon section (left) -->
-                    <g transform="translate(0, 0)">
-                        <!-- Navy arc above the people -->
-                        <path d="M10 28 Q45 0 80 28" stroke="#1B2A4A" stroke-width="4" fill="none" stroke-linecap="round"/>
-                        <!-- Red ECG trace on the arc -->
-                        <path d="M18 22 L32 22 L38 12 L45 32 L52 18 L58 22 L72 22" stroke="#E63946" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        <!-- Three people silhouettes -->
-                        <!-- Left person (smaller) -->
-                        <circle cx="28" cy="38" r="5" fill="#1B2A4A"/>
-                        <path d="M28 44 Q20 44 20 54 L20 58 L36 58 L36 54 Q36 44 28 44" fill="#1B2A4A"/>
-                        <!-- Middle person (taller/larger) -->
-                        <circle cx="45" cy="35" r="6" fill="#1B2A4A"/>
-                        <path d="M45 42 Q35 42 35 54 L35 58 L55 58 L55 54 Q55 42 45 42" fill="#1B2A4A"/>
-                        <!-- Right person (smaller) -->
-                        <circle cx="62" cy="38" r="5" fill="#1B2A4A"/>
-                        <path d="M62 44 Q54 44 54 54 L54 58 L70 58 L70 54 Q70 44 62 44" fill="#1B2A4A"/>
+                    <g transform="translate(5, 5)">
+                        <!-- Navy arc wrapping over the people -->
+                        <path d="M5 45 C5 15, 75 15, 75 45" stroke="#1B2A4A" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+                        <!-- Red ECG trace on top of the arc -->
+                        <path d="M15 32 L28 32 L33 22 L40 42 L47 28 L52 32 L65 32" stroke="#E63946" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+                        <!-- Three overlapping people silhouettes -->
+                        <!-- Left person (behind, smaller) -->
+                        <circle cx="22" cy="38" r="8" fill="#1B2A4A"/>
+                        <ellipse cx="22" cy="56" rx="12" ry="10" fill="#1B2A4A"/>
+
+                        <!-- Right person (behind, smaller) -->
+                        <circle cx="58" cy="38" r="8" fill="#1B2A4A"/>
+                        <ellipse cx="58" cy="56" rx="12" ry="10" fill="#1B2A4A"/>
+
+                        <!-- Middle person (front, larger) -->
+                        <circle cx="40" cy="35" r="10" fill="#1B2A4A"/>
+                        <ellipse cx="40" cy="55" rx="14" ry="12" fill="#1B2A4A"/>
                     </g>
+
                     <!-- Text section (right) - stacked RESUS / READY -->
-                    <text x="95" y="28" font-family="DM Sans, sans-serif" font-size="22" font-weight="700" fill="#1B2A4A">RESUS</text>
-                    <text x="95" y="52" font-family="DM Sans, sans-serif" font-size="22" font-weight="700" fill="#1B2A4A">READY</text>
+                    <text x="100" y="32" font-family="DM Sans, sans-serif" font-size="26" font-weight="700" fill="#1B2A4A">RESUS</text>
+                    <text x="100" y="58" font-family="DM Sans, sans-serif" font-size="26" font-weight="700" fill="#1B2A4A">READY</text>
                 </svg>
             </div>
 
